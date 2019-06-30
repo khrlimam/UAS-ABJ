@@ -4,6 +4,8 @@ namespace App\Http\Mikrotik;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use KhairulImam\ROSWrapper\Wrapper as Mikrotik;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Sftp\SftpAdapter;
 
 class User implements Authenticatable
 {
@@ -59,6 +61,17 @@ class User implements Authenticatable
             $this->getHostIp(),
             $this->getAuthIdentifier(),
             $this->getAuthPassword());
+    }
+
+    public function mikrotikFileSystem()
+    {
+        return $filesystem = new Filesystem(new SftpAdapter([
+            'host' => $this->getHostIp(),
+            'port' => 22,
+            'username' => $this->getAuthIdentifier(),
+            'password' => $this->getAuthPassword(),
+            'timeout' => 10,
+        ]));
     }
 
     private function getHostIp()

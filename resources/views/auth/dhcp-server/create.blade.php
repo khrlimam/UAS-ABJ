@@ -87,7 +87,6 @@
                                         class="text-danger">*</span></label>
 
                             <div class="col-md-9">
-
                                 <div class="row">
                                     <div class="col-md-8">
                                         <input id="network-address" type="text"
@@ -115,8 +114,6 @@
                                         @endif
                                     </div>
                                 </div>
-
-
                             </div>
                         </div>
 

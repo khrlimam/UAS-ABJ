@@ -22,6 +22,7 @@
         body {
             padding-top: 70px;
         }
+
         [hover-cursor] {
             cursor: pointer;
         }
@@ -91,12 +92,16 @@
                 <div class="col-md-4">
                     <div class="card" style="width: 18rem;">
                         <h5 class="card-header">
-                            Menu OSPF
+                            Backup
                         </h5>
                         <ul class="list-group list-group-flush">
-                            <a href="{{ route('ospf.index') }}"
-                               class="list-group-item list-group-item-action {{ Route::currentRouteName() == 'ospf.index'? 'active':'' }}">
-                                Daftar Routing OSPF Network
+                            <a href="{{ route('backup.index') }}"
+                               class="list-group-item list-group-item-action {{ Route::currentRouteName() == 'backup.index'? 'active':'' }}">
+                                File Backup
+                            </a>
+                            <a href="{{ route('schedule.index') }}"
+                               class="list-group-item list-group-item-action {{ Route::currentRouteName() == 'schedule.index'? 'active':'' }}">
+                                Backup Terjadwal
                             </a>
                         </ul>
                     </div>

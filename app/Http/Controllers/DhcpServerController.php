@@ -208,6 +208,7 @@ class DhcpServerController extends Controller
             'disabled' => $toggle,
             '.id' => $id
         ]);
+
         if (count($operation) == 0) {
             return redirect()->route('dhcp-server.index')->with('status', 'Data DHCP Server dengan checksum ' . $id . ' telah diubah');
         }
