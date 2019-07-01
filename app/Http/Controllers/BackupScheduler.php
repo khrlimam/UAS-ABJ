@@ -91,13 +91,25 @@ class BackupScheduler extends Controller
      */
     public function update(ScheduleRequest $request, $id)
     {
+
+        $scheduler = head(Mikrotik::API()->comm('/system/scheduler/print', ['?.id' => $id]));
+        $script = head(Mikrotik::API()->comm('/system/script/print', ['?name' => $scheduler['on-event']]));
+
         $updateSchedulerData = Arr::except($request->validated(), ['interval-value', 'interval-type', 'file-name']);
+        $updateScriptData = [
+            '.id' => $script['.id'],
+            'name' => $updateSchedulerData['name'],
+            'source' => $this->backupScriptCompiler($request->validated()['file-name'])
+        ];
+
 
         $date = $updateSchedulerData['start-date'];
         $updateSchedulerData['start-date'] = Carbon::createFromFormat("Y-m-d", $date)->format("M/d/Y");
         $updateSchedulerData['interval'] = $this->parseInterval($request->validated()['interval-value'], $request->validated()['interval-type']);
         $updateSchedulerData['.id'] = $id;
+        $updateSchedulerData['on-event'] = $updateScriptData['name'];
 
+        Mikrotik::API()->comm('/system/script/set', $updateScriptData);
         $updateScheduler = Mikrotik::API()->comm("/system/scheduler/set", $updateSchedulerData);
 
         if (is_string($updateScheduler) || is_array($updateScheduler) && !key_exists("!trap", $updateScheduler))
