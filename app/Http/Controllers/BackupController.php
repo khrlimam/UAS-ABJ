@@ -49,7 +49,8 @@ class BackupController extends Controller
         $deleted = Mikrotik::API()->comm("/file/remove", ['.id' => $id]);
         if (!key_exists('!trap', $deleted))
             return redirect()->route('backup.index')->with('status', 'File dengan id ' . $id . ' telah dihapus');
-        else return redirect()->back()->with('fail', 'Gagal menghapus file dengan alasan: ' . head($deleted['!trap'])['message']);
+        else return redirect()->back()->with('fail', 'Gagal menghapus file dengan alasan: '
+            . head($deleted['!trap'])['message']);
     }
 
     private function getContent($file)
