@@ -45,7 +45,9 @@ class BackupScheduler extends Controller
 
         $date = $validated['start-date'];
         $validated['start-date'] = Carbon::createFromFormat("Y-m-d", $date)->format("M/d/Y");
-        $validated['interval'] = $this->parseInterval($request->validated()['interval-value'], $request->validated()['interval-type']);
+        $validated['interval'] = $this->parseInterval(
+            $request->validated()['interval-value'],
+            $request->validated()['interval-type']);
 
         $newScriptData = [
             'name' => $validated['name'],
@@ -61,7 +63,8 @@ class BackupScheduler extends Controller
         if (is_string($createScheduler) || is_array($createScheduler) && !key_exists("!trap", $createScheduler))
             return redirect()->route('schedule.index')->with('status', 'Berhasil menambahkan backup terjadwal baru');
         else
-            return redirect()->back()->withInput()->with('fail', 'Terjadi kesalahan dengan alasan ' . head($createScheduler['!trap'])['message']);
+            return redirect()->back()->withInput()->with('fail', 'Terjadi kesalahan dengan alasan '
+                . head($createScheduler['!trap'])['message']);
     }
 
     /**
@@ -79,7 +82,13 @@ class BackupScheduler extends Controller
         $readInterval = $this->readInterval($scheduler['interval']);
         $intervalValue = $readInterval->intervalValue;
         $intervalType = $readInterval->intervalType;
-        return view('auth.scheduler.edit', compact('hostname', 'startDate', 'startTime', 'scheduler', 'intervalValue', 'intervalType'));
+        return view('auth.scheduler.edit', compact(
+            'hostname',
+            'startDate',
+            'startTime',
+            'scheduler',
+            'intervalValue',
+            'intervalType'));
     }
 
     /**
@@ -105,7 +114,9 @@ class BackupScheduler extends Controller
 
         $date = $updateSchedulerData['start-date'];
         $updateSchedulerData['start-date'] = Carbon::createFromFormat("Y-m-d", $date)->format("M/d/Y");
-        $updateSchedulerData['interval'] = $this->parseInterval($request->validated()['interval-value'], $request->validated()['interval-type']);
+        $updateSchedulerData['interval'] = $this->parseInterval(
+            $request->validated()['interval-value'],
+            $request->validated()['interval-type']);
         $updateSchedulerData['.id'] = $id;
         $updateSchedulerData['on-event'] = $updateScriptData['name'];
 
@@ -115,7 +126,8 @@ class BackupScheduler extends Controller
         if (is_string($updateScheduler) || is_array($updateScheduler) && !key_exists("!trap", $updateScheduler))
             return redirect()->route('schedule.index')->with('status', 'Berhasil mengubah data backup terjadwal');
         else
-            return redirect()->back()->withInput()->with('fail', 'Terjadi kesalahan dengan alasan ' . head($updateScheduler['!trap'])['message']);
+            return redirect()->back()->withInput()->with('fail', 'Terjadi kesalahan dengan alasan '
+                . head($updateScheduler['!trap'])['message']);
     }
 
     /**
@@ -135,7 +147,8 @@ class BackupScheduler extends Controller
         if (!key_exists('!trap', $deleteScheduler))
             return redirect()->route('schedule.index')->with('status', 'Scheduler dengan id ' . $id . ' telah dihapus');
         else
-            return redirect()->route('schedule.index')->with('fail', 'Gagal menghapus scheduler dengan alasan ' . head($deleteScheduler['!trap'])['message']);
+            return redirect()->route('schedule.index')->with('fail', 'Gagal menghapus scheduler dengan alasan '
+                . head($deleteScheduler['!trap'])['message']);
     }
 
     public function toggle($id, $toggle)
@@ -148,7 +161,8 @@ class BackupScheduler extends Controller
         if (!key_exists('!trap', $operation))
             return redirect()->route('schedule.index')->with('status', 'Scheduler dengan id ' . $id . ' telah diubah');
         else
-            return redirect()->route('schedule.index')->with('fail', 'Gagal mengubah status scheduler dengan alasan ' . head($operation['!trap'])['message']);
+            return redirect()->route('schedule.index')->with('fail', 'Gagal mengubah status scheduler dengan alasan '
+                . head($operation['!trap'])['message']);
     }
 
     private function backupScriptCompiler($filename)
@@ -160,7 +174,8 @@ class BackupScheduler extends Controller
             . ':set varMonth [:pick $varDate 0 3];'
             . ':set varDay [:pick $varDate 4 6];'
             . ':set varYear [:pick $varDate 7 11];'
-            . '/export compact file=("' . $filename . ' ".[$varDay]."-".[$varMonth]."-".[$varYear]." ".[/system clock get time]);'
+            . '/export compact '
+            . 'file=("' . $filename . ' ".[$varDay]."-".[$varMonth]."-".[$varYear]." ".[/system clock get time]);'
             . '}';
     }
 
