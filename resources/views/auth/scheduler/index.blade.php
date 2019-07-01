@@ -30,7 +30,7 @@
             <tr>
                 <th></th>
                 <th>Nama</th>
-                <th>Waktu mulai</th>
+                <th>Mulai</th>
                 <th>Jarak</th>
                 <th>Tereksekusi</th>
                 <th>Berikutnya</th>
@@ -46,7 +46,7 @@
                                   class="badge badge-pill badge-danger"><i class="fa fa-times"></i></span>
                         @endif
                     </td>
-                    <td>{{ $schedule['on-event'] }}</td>
+                    <td>{{ $schedule['name'] }}</td>
                     <td>{{ $schedule['start-time'] }}</td>
                     <td>{{ $schedule['interval'] }}</td>
                     <td>{{ $schedule['run-count'] }} kali</td>

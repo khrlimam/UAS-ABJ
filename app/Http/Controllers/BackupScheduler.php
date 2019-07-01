@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Mikrotik\Util\Mikrotik;
 use App\Http\Requests\ScheduleRequest;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
 class BackupScheduler extends Controller
@@ -42,10 +41,11 @@ class BackupScheduler extends Controller
      */
     public function store(ScheduleRequest $request)
     {
-        $validated = $request->validated();
+        $validated = Arr::except($request->validated(), ['interval-value', 'interval-type']);
 
         $date = $validated['start-date'];
         $validated['start-date'] = Carbon::createFromFormat("Y-m-d", $date)->format("M/d/Y");
+        $validated['interval'] = $this->parseInterval($request->validated()['interval-value'], $request->validated()['interval-type']);
 
         $newScriptData = [
             'name' => $validated['name'],
@@ -55,14 +55,13 @@ class BackupScheduler extends Controller
         $newSchedulerData = Arr::except($validated, 'file-name');
         $newSchedulerData['on-event'] = $newScriptData['name'];
 
-        $createScript = Mikrotik::API()->comm("/system/script/add", $newScriptData);
+        Mikrotik::API()->comm("/system/script/add", $newScriptData);
         $createScheduler = Mikrotik::API()->comm("/system/scheduler/add", $newSchedulerData);
 
         if (is_string($createScheduler) || is_array($createScheduler) && !key_exists("!trap", $createScheduler))
             return redirect()->route('schedule.index')->with('status', 'Berhasil menambahkan backup terjadwal baru');
         else
             return redirect()->back()->withInput()->with('fail', 'Terjadi kesalahan dengan alasan ' . head($createScheduler['!trap'])['message']);
-
     }
 
     /**
@@ -77,8 +76,10 @@ class BackupScheduler extends Controller
         $hostname = head(Mikrotik::API()->comm("/system/identity/print"))['name'];
         $startDate = Carbon::createFromFormat("M/d/Y", $scheduler['start-date'])->format("Y-m-d");
         $startTime = $scheduler['start-time'];
-        $interval = implode(':', explode(' ', trim(str_replace(['h', 'm', 's'], ' ', $scheduler['interval']))));
-        return view('auth.scheduler.edit', compact('hostname', 'startDate', 'startTime', 'scheduler', 'interval'));
+        $readInterval = $this->readInterval($scheduler['interval']);
+        $intervalValue = $readInterval->intervalValue;
+        $intervalType = $readInterval->intervalType;
+        return view('auth.scheduler.edit', compact('hostname', 'startDate', 'startTime', 'scheduler', 'intervalValue', 'intervalType'));
     }
 
     /**
@@ -88,9 +89,21 @@ class BackupScheduler extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(ScheduleRequest $request, $id)
     {
-        //
+        $updateSchedulerData = Arr::except($request->validated(), ['interval-value', 'interval-type', 'file-name']);
+
+        $date = $updateSchedulerData['start-date'];
+        $updateSchedulerData['start-date'] = Carbon::createFromFormat("Y-m-d", $date)->format("M/d/Y");
+        $updateSchedulerData['interval'] = $this->parseInterval($request->validated()['interval-value'], $request->validated()['interval-type']);
+        $updateSchedulerData['.id'] = $id;
+
+        $updateScheduler = Mikrotik::API()->comm("/system/scheduler/set", $updateSchedulerData);
+
+        if (is_string($updateScheduler) || is_array($updateScheduler) && !key_exists("!trap", $updateScheduler))
+            return redirect()->route('schedule.index')->with('status', 'Berhasil mengubah data backup terjadwal');
+        else
+            return redirect()->back()->withInput()->with('fail', 'Terjadi kesalahan dengan alasan ' . head($updateScheduler['!trap'])['message']);
     }
 
     /**
@@ -101,8 +114,8 @@ class BackupScheduler extends Controller
      */
     public function destroy($id)
     {
-        $name = head(Mikrotik::API()->comm("/system/scheduler/print", ['?.id' => $id]))['name'];
-        $script = head(Mikrotik::API()->comm("/system/script/print", ['?name' => $name]));
+        $scriptName = head(Mikrotik::API()->comm("/system/scheduler/print", ['?.id' => $id]))['on-event'];
+        $script = head(Mikrotik::API()->comm("/system/script/print", ['?name' => $scriptName]));
 
         $deleteScheduler = Mikrotik::API()->comm('/system/scheduler/remove', ['.id' => $id]);
         Mikrotik::API()->comm('/system/script/remove', ['.id' => $script['.id']]);
@@ -139,9 +152,62 @@ class BackupScheduler extends Controller
             . '}';
     }
 
-    private function formatInterval($interval)
+    private function readInterval($interval)
     {
+        $type = '';
+        if (strpos($interval, 'w')) {
+            $index = strpos($interval, 'w');
+            $type = 'd';
+            $subbed = substr($interval, 0, $index);
+            $value = $subbed * 7;
+            if (strpos($interval, 'd')) {
+                $start = $index + 1;
+                $dIndex = strpos($interval, 'd');
+                $length = $dIndex - $start;
+                $type = 'd';
+                $days = substr($interval, $start, $length);
+                $value += $days;
+            }
+        } else if (strpos($interval, 'd')) {
+            $index = strpos($interval, 'd');
+            $type = 'd';
+            $days = substr($interval, 0, $index);
+            $value = $days;
+        } else {
+            if (strpos($interval, 'h')) {
+                $index = strpos($interval, 'h');
+                $type = 'h';
+            } elseif (strpos($interval, 'm')) {
+                $index = strpos($interval, 'm');
+                $type = 'i';
+            } elseif (strpos($interval, 's')) {
+                $index = strpos($interval, 's');
+                $type = 's';
+            }
+            $value = substr($interval, 0, $index);
+        }
+        return (object)['intervalValue' => $value, 'intervalType' => $type];
+    }
 
+    private function parseInterval($value, $type)
+    {
+        switch ($type) {
+            case 'd':
+                $interval = $value . 'd 00:00:00';
+                break;
+            case 'h':
+                $interval = $value . ':00:00';
+                break;
+            case 'i':
+                $interval = "00:$value:00";
+                break;
+            case 's':
+                $interval = "00:00:$value";
+                break;
+            default:
+                $interval = "24:00:00";
+        }
+        return $interval;
     }
 
 }

@@ -90,9 +90,10 @@
                                 <div class="row">
                                     <div class="col-md-8">
                                         <input id="network-address" type="text"
-                                            placeholder="Contoh: 192.168.2.0"
-                                            class="form-control{{ $errors->has('network-address') ? ' is-invalid' : '' }}"
-                                            name="network-address" value="{{ old('network-address') }}" required autofocus>
+                                               placeholder="Contoh: 192.168.2.0"
+                                               class="form-control{{ $errors->has('network-address') ? ' is-invalid' : '' }}"
+                                               name="network-address" value="{{ old('network-address') }}" required
+                                               autofocus>
 
                                         @if ($errors->has('network-address'))
                                             <span class="invalid-feedback" role="alert">
@@ -102,10 +103,11 @@
                                     </div>
                                     <label class="col-md-1 col-form-label">/</label>
                                     <div class="col-md-3">
-                                    <input id="network-subnetmask" type="number"
-                                            placeholder="24"
-                                            class="form-control{{ $errors->has('network-subnetmask') ? ' is-invalid' : '' }}"
-                                            name="network-subnetmask" value="{{ old('network-subnetmask') }}" autofocus>
+                                        <input id="network-subnetmask" type="number"
+                                               placeholder="24"
+                                               class="form-control{{ $errors->has('network-subnetmask') ? ' is-invalid' : '' }}"
+                                               name="network-subnetmask" value="{{ old('network-subnetmask') }}"
+                                               autofocus>
 
                                         @if ($errors->has('network-subnetmask'))
                                             <span class="invalid-feedback" role="alert">
@@ -227,7 +229,8 @@
                                         name="dhcp-interface" required autofocus>
                                     <option value="">--- Interface belum dipakai ---</option>
                                     @foreach($interfaces as $interface)
-                                        <option {{ $interface['name'] == old('dhcp-interface')?'selected':'' }} value="{{ $interface['name'] }}">{{ $interface['type'] }} - {{ $interface['name'] }} - {{ $interface['address'] }}</option>
+                                        <option {{ $interface['name'] == old('dhcp-interface')?'selected':'' }} value="{{ $interface['name'] }}">{{ $interface['type'] }}
+                                            - {{ $interface['name'] }} - {{ $interface['address'] }}</option>
                                     @endforeach
                                 </select>
 
@@ -269,7 +272,7 @@
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="dhcp-status" id="disable"
-                                               value="yes">
+                                               value="yes" {{ old('dhcp-status') == 'yes'? 'checked':'' }}>
                                         <label class="form-check-label" for="disable">
                                             Disable
                                         </label>

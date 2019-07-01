@@ -28,7 +28,8 @@ class ScheduleRequest extends FormRequest
             'name' => 'required',
             'start-date' => 'date_format:Y-m-d',
             'start-time' => 'date_format:H:i:s',
-            'interval' => 'date_format:H:i:s',
+            'interval-value' => 'required|integer',
+            'interval-type' => 'required',
             'file-name' => 'nullable',
             'disabled' => 'required'
         ];

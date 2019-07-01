@@ -5,7 +5,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">Form Tambah Backup Terjadwal</h4>
+                    <h4 class="card-title">Form tambah backup terjadwal</h4>
                     @if (session('fail'))
                         <div class="alert alert-danger" role="alert">
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -75,24 +75,6 @@
                         </div>
 
                         <div class="form-group row">
-                            <label for="interval"
-                                   class="col-md-3 col-form-label">{{ __('Jarak') }} <span
-                                        class="text-danger">*</span></label>
-
-                            <div class="col-md-9">
-                                <input id="interval" type="text" placeholder="hh:mm:ss"
-                                       class="form-control{{ $errors->has('interval') ? ' is-invalid' : '' }}"
-                                       name="interval" value="{{ old('interval')?old('interval'):'00:00:00' }}" required autofocus>
-
-                                @if ($errors->has('interval'))
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $errors->first('interval') }}</strong>
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
                             <label for="file-name"
                                    class="col-md-3 col-form-label">{{ __('Nama file') }} <span
                                         class="text-danger">*</span></label>
@@ -108,6 +90,55 @@
                                         <strong>{{ $errors->first('file-name') }}</strong>
                                     </span>
                                 @endif
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="interval-value"
+                                   class="col-md-3 col-form-label">{{ __('Jalankan setiap') }} <span
+                                        class="text-danger">*</span></label>
+
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <input id="interval-value" type="text"
+                                               placeholder="Contoh: 10"
+                                               class="form-control{{ $errors->has('interval-value') ? ' is-invalid' : '' }}"
+                                               name="interval-value"
+                                               value="{{ old('interval-value') }}"
+                                               required
+                                               autofocus>
+
+                                        @if ($errors->has('interval-value'))
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $errors->first('interval-value') }}</strong>
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="col-md-5">
+                                        <select name="interval-type" class="form-control" required>
+                                            <option value="">-- Pilih satuan jarak --</option>
+                                            <option {{ (old('interval-type') == 'd')? 'selected':'' }} value="d">
+                                                Hari
+                                            </option>
+                                            <option {{ (old('interval-type') == 'h')? 'selected':'' }} value="h">
+                                                Jam
+                                            </option>
+                                            <option {{ (old('interval-type') == 'i')? 'selected':'' }} value="i">
+                                                Menit
+                                            </option>
+                                            <option {{ (old('interval-type') == 's')? 'selected':'' }} value="s">
+                                                Detik
+                                            </option>
+                                        </select>
+
+                                        @if ($errors->has('interval-type'))
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $errors->first('interval-type') }}</strong>
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -128,7 +159,7 @@
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="disabled" id="disable"
-                                               value="yes">
+                                               value="yes" {{ old('disabled') == 'yes'? 'checked':'' }}>
                                         <label class="form-check-label" for="disable">
                                             Disable
                                         </label>
